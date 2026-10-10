@@ -83,7 +83,7 @@ async function doctor() {
   else warn('no access token yet', 'npm start creates one for you in .env');
   const h = await herdrSocket();
   line(h.ok, `herdr socket ${h.path}`, h.why || '');
-  if (!h.ok) console.log(c.d('      no herdr? `npm run demo` shows the office with a made-up building.'));
+  if (!h.ok) console.log(c.d('      no herdr? install it (curl -fsSL https://herdr.dev/install.sh | sh), then run `herdr`. Or `npm run demo` for a made-up building.'));
   const port = Number(process.env.PORT || 4747);
   const free = await portFree(port);
   if (free) line(true, `port ${port} is free`); else warn(`port ${port} is in use`, 'already running? otherwise set PORT=... in .env');
@@ -117,7 +117,7 @@ if (!demo) {
   const h = await herdrSocket();
   if (!h.ok) {
     console.error(`${c.y('Could not reach herdr')} (${h.why}).`);
-    console.error(`  Start herdr first, or try ${c.b('npm run demo')} to see the office without it. ${c.d('npm run doctor for details')}\n`);
+    console.error(`  Install and start herdr first (https://herdr.dev/docs/install/), or try ${c.b('npm run demo')} to see the office without it. ${c.d('npm run doctor for details')}\n`);
     // keep going: the office shows a "waiting for herdr" state and connects as soon as herdr is up
   }
 }

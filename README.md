@@ -12,7 +12,7 @@ A virtual office for your [herdr](https://herdr.dev) session, with a proper chat
 [![Zero dependencies](https://img.shields.io/badge/runtime%20dependencies-0-4cc9f0.svg)](#how-it-works)
 [![No build step](https://img.shields.io/badge/build%20step-none-c77dff.svg)](#develop)
 
-[**Try it**](#try-it-in-30-seconds) · [Features](#features) · [Chat view](#chat-view) · [Install](#install) · [Phone & deploy](#on-your-phone) · [Contribute](#contributing)
+[**Try it**](#try-it-in-30-seconds) · [Prerequisites](#prerequisites) · [Features](#features) · [Chat view](#chat-view) · [Install](#install) · [Phone & deploy](#on-your-phone) · [Contribute](#contributing)
 
 <img src="docs/screenshots/office.gif" alt="Animated: a floor of the office. Workers type at their desks, and two interns walk in from the pantry to help." width="860">
 
@@ -56,9 +56,33 @@ npm run demo          # -> http://127.0.0.1:4747
 The demo is a made-up building whose agents change state over time, with a sample conversation in every chat. Every
 screenshot in this README is taken from it, so nothing private is shown.
 
-## Install
+## Prerequisites
 
-You need **Node 20+** and a running **herdr**. Linux is the tested platform (the Cursor and Codex adapters read `/proc`).
+Herdr Office draws a [herdr](https://herdr.dev) session, so install and start herdr first. (Just curious? Skip this and
+run `npm run demo`.)
+
+**1. Install herdr** (one binary; macOS, Linux and Windows):
+
+```bash
+curl -fsSL https://herdr.dev/install.sh | sh     # macOS / Linux
+brew install herdr                               # Homebrew
+mise use -g herdr                                # mise
+```
+
+Windows (PowerShell): `irm https://herdr.dev/install.ps1 | iex`. Nix and manual downloads are covered in the
+[herdr install guide](https://herdr.dev/docs/install/). If your shell cannot find `herdr` afterwards, open a new terminal.
+
+**2. Start herdr and put an agent in a pane.** Run `herdr`: it launches (or attaches to) a persistent session. Open a
+workspace, then start Claude Code, Cursor CLI, Codex CLI or any [agent herdr detects](https://herdr.dev) in a pane.
+`herdr status` shows that its background server is up. That server's socket (`~/.config/herdr/herdr.sock`) is what the
+office connects to.
+
+**3. Node 20 or newer**: `node --version`.
+
+Herdr Office itself is tested on Linux; the Cursor and Codex chat adapters read `/proc`. macOS and WSL reports are
+welcome.
+
+## Install
 
 ```bash
 git clone https://github.com/fandyaditya/herdr-office && cd herdr-office
