@@ -73,6 +73,6 @@ session, and [harnesses/](harnesses/) for each agent's log format.
 | `render.js`, `art.js`, `assets.js` | Canvas renderer (16 px tiles, y-sorted), code-drawn building and furniture, sprite atlas loader with a code-drawn fallback. |
 | `chat.js`, `markdown.js` | `ChatView` (items -> DOM, deltas, paging) and a small safe markdown renderer. |
 | `ansi.js` | Terminal colours for the terminal tab. |
-| `trivia.js`, `eggs.js` | Fun facts (Herdy, the About box) and the easter eggs. Nothing here touches the network. |
+| `trivia.js`, `eggs.js` | Fun facts and small surprises. Nothing here touches the network. |
 
 The markdown renderer escapes everything before formatting, and the page ships a CSP without inline scripts.

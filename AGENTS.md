@@ -30,7 +30,7 @@ You never need a real herdr to work on the UI, the sim or the chat view: demo mo
 | Simulation | `public/js/sim.js` | `Worker`, `Mascot` (Herdy), `Intern`, `FloorSim`. Status drives behaviour. |
 | Rendering and art | `public/js/render.js`, `art.js`, `assets.js` | Canvas 2D, y-sorted; building and furniture are drawn in code; characters come from `public/assets/*.png`. |
 | UI shell and chat panel | `public/js/main.js`, `chat.js`, `markdown.js`, `public/style.css` | `window.__office` exposes `S`, `renderer`, `select()` for tests. |
-| Fun stuff | `public/js/trivia.js`, `public/js/eggs.js` | Trivia lines and easter eggs. Add yours there. |
+| Fun stuff | `public/js/trivia.js`, `public/js/eggs.js` | Trivia and easter eggs. **Keep the eggs secret**: do not list or describe them in the README, docs, screenshots or PR text (the in-app About box gives hints). |
 | Tests | `test/*.test.js` | `node --test`, fixtures inline. |
 | Tools | `tools/` | `check.mjs`, `screenshots.mjs`, `e2e*.mjs` (need `playwright-core`, see `tools/lib/browser.mjs`). |
 

@@ -77,19 +77,7 @@ page = await open({ width: 390, height: 844 }, { deviceScaleFactor: 2, isMobile:
 await page.screenshot({ path: `${out}mobile-office.png` });
 await page.context().close();
 
-// 6. an easter egg (the Konami code) and the About box
-page = await open({ width: 1280, height: 800 });
-await page.evaluate(() => { document.getElementById('toasts').innerHTML = ''; });
-for (const k of ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']) await page.keyboard.press(k);
-await wait(1800);
-await page.screenshot({ path: `${out}party.png` });
-await page.evaluate(() => { localStorage.removeItem('office.eggs'); document.getElementById('toasts').innerHTML = ''; });
-await page.keyboard.press('Shift+?');
-await wait(400);
-await page.screenshot({ path: `${out}about.png` });
-await page.context().close();
-
-// 7. a short animation for the README: the interns walk in from the pantry (frames -> ffmpeg, optional)
+// 6. a short animation for the README: the interns walk in from the pantry (frames -> ffmpeg, optional)
 if (spawnSync('ffmpeg', ['-version'], { stdio: 'ignore' }).status === 0) {
   const post = (body) => fetch(`${base}/api/mock/set`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   await post({ [worker.id]: { status: 'working', helpers: 0 } });

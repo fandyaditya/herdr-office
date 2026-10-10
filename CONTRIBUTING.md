@@ -18,8 +18,7 @@ or on matching a pane to a live agent session. `OFFICE_MOCK_STATIC=1` freezes th
 
 ## Good first contributions
 
-- **A trivia line** (one line in `public/js/trivia.js`). True, short, friendly.
-- **An easter egg** (`public/js/eggs.js`). Harmless, quiet, never in the way of typing.
+- **Something fun** for the office: a furniture piece, a joke, a surprise. See `AGENTS.md` for where such things live.
 - **A furniture piece or room theme** (`public/js/art.js`, `floorplan.js`).
 - **A chat adapter** for another agent: Gemini CLI, OpenCode, pi, Copilot CLI. Bigger, and the most useful.
 - **macOS / WSL**: try it, tell us what breaks in the process-based session matching.

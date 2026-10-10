@@ -12,7 +12,7 @@ A virtual office for your [herdr](https://herdr.dev) session, with a proper chat
 [![Zero dependencies](https://img.shields.io/badge/runtime%20dependencies-0-4cc9f0.svg)](#how-it-works)
 [![No build step](https://img.shields.io/badge/build%20step-none-c77dff.svg)](#develop)
 
-[**Try it**](#try-it-in-30-seconds) · [Features](#features) · [Chat view](#chat-view) · [Install](#install) · [Phone & deploy](#on-your-phone) · [Contribute](#contributing) · [Secrets](#trivia-and-secrets)
+[**Try it**](#try-it-in-30-seconds) · [Features](#features) · [Chat view](#chat-view) · [Install](#install) · [Phone & deploy](#on-your-phone) · [Contribute](#contributing)
 
 <img src="docs/screenshots/office.gif" alt="Animated: a floor of the office. Workers type at their desks, and two interns walk in from the pantry to help." width="860">
 
@@ -53,8 +53,8 @@ git clone https://github.com/fandyaditya/herdr-office && cd herdr-office
 npm run demo          # -> http://127.0.0.1:4747
 ```
 
-The demo is a made-up building whose agents change state over time, with a sample conversation in every chat. Poke
-the sheep. Press `?`.
+The demo is a made-up building whose agents change state over time, with a sample conversation in every chat. Every
+screenshot in this README is taken from it, so nothing private is shown.
 
 ## Install
 
@@ -156,10 +156,7 @@ Want your agent in this table? See [Contributing](#contributing). How it works a
 
 ## On your phone
 
-<table>
-<tr>
-<td width="34%"><img src="docs/screenshots/mobile-office.png" alt="The office on a phone"></td>
-<td>
+<img src="docs/screenshots/mobile-office.png" alt="The office on a phone" width="300" align="right">
 
 The office works on a phone: drag to pan, pinch to zoom, tap a worker for the chat. To reach it from outside your
 machine, put it behind HTTPS (a reverse proxy, a Cloudflare tunnel, Tailscale, ...). Do not expose a plain-HTTP port:
@@ -176,24 +173,7 @@ loginctl enable-linger $USER  # keep the user service alive after logout
 
 The vhost turns buffering off for `/api/events` (server-sent events); any other proxy needs the same.
 
-</td>
-</tr>
-</table>
-
-## Trivia and secrets
-
-Herdy knows things. Poke the sheep a few times and it shares a fun fact. Press **`?`** for shortcuts, another fact,
-and a list of the **six easter eggs** hidden in the office, with a cryptic hint for each one you have not found yet.
-No spoilers here, but a few hints: some codes never die, Herdy answers to its name, and an office runs on coffee.
-
-<table>
-<tr>
-<td width="50%"><img src="docs/screenshots/party.png" alt="Party mode: confetti over the office"></td>
-<td width="50%"><img src="docs/screenshots/about.png" alt="The About box with shortcuts, a fun fact and the secrets list"></td>
-</tr>
-</table>
-
-Found one? Added a better one? [Send a PR](#contributing): trivia is one line in `public/js/trivia.js`.
+<br clear="right">
 
 ## Security
 
@@ -239,8 +219,8 @@ npm run check    # before you push: syntax, house rules (CSP, zero dependencies,
   read it directly): code map, house rules, how to verify UI changes, recipes and a definition of done. Point your agent
   at it and ask for what you want.
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** has good first issues and the PR checklist.
-- Ideas that fit well: a chat adapter for another agent (Gemini CLI, OpenCode, pi, Copilot CLI), new trivia, a new easter
-  egg, a new furniture piece or room theme, macOS / WSL validation.
+- Ideas that fit well: a chat adapter for another agent (Gemini CLI, OpenCode, pi, Copilot CLI), a new furniture piece
+  or room theme, macOS / WSL validation, or something that makes the office a bit more fun.
 
 ```bash
 npm test                  # node --test, no dependencies
