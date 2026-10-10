@@ -1,0 +1,104 @@
+{
+ "ada": {
+  "id": "59e62b27-f671-438f-aaff-aef0a0cc54cf",
+  "job": "edcba42f-56b6-425d-8fce-5b9dc2d8ba45",
+  "created": true,
+  "anim": [
+   "25df4d8d-00a6-4a70-a4f3-7707cb8b0757",
+   "4fb042b9-6f60-4477-ae46-2e6615a540be"
+  ],
+  "animated": true,
+  "downloaded": true
+ },
+ "bea": {
+  "id": "27c9e5d9-8fbb-48d9-8cdc-e0b8f133c4ea",
+  "job": "a66f42d9-4d55-42f7-8c67-a030a7897a1a",
+  "created": true,
+  "anim": [
+   "1873b4ac-82cb-4571-8a22-29c8c72af097",
+   "831657b3-d958-4d7d-a372-ebd2cd3c1c3e",
+   "9bc63f3d-f01f-4909-b9bf-ce1e1e7973f6",
+   "d5af1a53-7a3d-40db-a08f-07e5635c8c44"
+  ],
+  "animated": true,
+  "downloaded": true
+ },
+ "cal": {
+  "id": "a5ebe7e8-557a-4b01-a7b0-6d9fc38a5e15",
+  "job": "3991f98e-c949-4105-b39d-c25289808651",
+  "created": true,
+  "anim": [
+   "3ffcf402-94d8-49c9-b976-5ac77c848006",
+   "b4ac32ff-d74f-4c99-b386-10467f48dad3",
+   "476c171a-2be8-4588-bd27-cf2a7fe266f2",
+   "01a6066c-7c89-4a9e-8bb6-b45a63c40b50"
+  ],
+  "animated": true,
+  "downloaded": true
+ },
+ "dee": {
+  "id": "3e116895-8c5f-425c-8a0f-9c3953ad71ab",
+  "job": "dad369ba-7fd1-48aa-9646-ee4c576e12b3",
+  "created": true,
+  "anim": [
+   "1af90ca0-4b46-45eb-9c87-8258d5d8c163",
+   "e2d2125e-d413-461f-97a9-18c51a0e9c11",
+   "bf2f09de-8114-4249-ba5a-9f3dab83885a",
+   "4de03c09-fe6f-42b3-8866-62fc210b9f12"
+  ],
+  "animated": true,
+  "downloaded": true
+ },
+ "eli": {
+  "id": "be3bed17-2242-4957-8a23-49fadf85ac4e",
+  "job": "7b2f537c-a17b-42c3-9cdd-e9292731ef0d",
+  "created": true,
+  "anim": [
+   "a42b07e3-6085-42ef-8493-c4d5e6f16d59",
+   "51779863-63ae-4525-8e7d-d928280299c2",
+   "0db2dde8-d07f-492c-acd4-62b5f831687f",
+   "bc47ca54-ff2f-449d-b132-7ce98b962fec"
+  ],
+  "animated": true,
+  "downloaded": true
+ },
+ "fay": {
+  "id": "95643a1a-b5d6-42e7-9023-3debe990685f",
+  "job": "570c172c-96db-414c-9e08-8c983582b523",
+  "created": true,
+  "anim": [
+   "e02f0797-f594-4831-9420-c2e62e28b1f7",
+   "32faf55c-dfd1-44ab-b40b-e0d8aa5d60a6",
+   "426b8f42-57a7-47fc-988f-22c18ed93b90",
+   "be3b31cc-181f-4f57-9993-e39509283ebe"
+  ],
+  "animated": true,
+  "downloaded": true
+ },
+ "gus": {
+  "id": "843d10b1-3667-457f-a856-72862371594d",
+  "job": "584ebc73-c7cd-42e8-9743-0b9595d408c5",
+  "created": true,
+  "anim": [
+   "d2f8e967-5318-444a-a69a-f45923e207f7",
+   "dde73b9d-eed6-46c4-8e5d-1337ac259695",
+   "35082d27-b05f-498d-96bc-2e96a65d09c1",
+   "60d8e0f9-1048-4d4f-81c6-ddd8b66721ed"
+  ],
+  "animated": true,
+  "downloaded": true
+ },
+ "hana": {
+  "id": "388d2c66-702d-4116-b86b-8008aed01aa3",
+  "job": "d3f2bfe2-43a2-4c58-9adb-8ac25a7f1a73",
+  "created": true,
+  "anim": [
+   "99a24420-a131-4fe6-931f-9b323039431c",
+   "7b71b115-33cd-478e-8f2a-280c0d8f034a",
+   "ede79253-19af-4d5d-a6fe-6751384a556f",
+   "485330cc-b441-4b06-a74a-057aa93a5cff"
+  ],
+  "animated": true,
+  "downloaded": true
+ }
+}

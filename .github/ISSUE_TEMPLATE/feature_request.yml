@@ -1,0 +1,13 @@
+name: Idea / feature request
+description: A new room, a new agent, a joke for Herdy, anything
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes: { label: What would you like to see, description: "The problem first, then the idea." }
+    validations: { required: true }
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Roughly what is it
+      options: [Chat adapter for another agent, Office / pixel art, Easter egg or trivia, Setup / docs, Something else]

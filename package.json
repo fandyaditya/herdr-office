@@ -1,0 +1,33 @@
+{
+  "name": "herdr-office",
+  "version": "0.2.0",
+  "description": "A pixel-art virtual office and web chat view for your herdr terminal session: workspace = floor, tab = room, pane = desk.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "herdr",
+    "claude-code",
+    "cursor",
+    "codex",
+    "ai-agents",
+    "terminal",
+    "dashboard",
+    "pixel-art",
+    "canvas"
+  ],
+  "scripts": {
+    "start": "node bin/herdr-office.mjs",
+    "demo": "node bin/herdr-office.mjs --demo",
+    "doctor": "node bin/herdr-office.mjs doctor",
+    "dev": "OFFICE_DEV=1 node --watch bin/herdr-office.mjs",
+    "test": "node --test test/*.test.js",
+    "check": "node tools/check.mjs",
+    "screenshots": "node tools/screenshots.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "herdr-office": "bin/herdr-office.mjs"
+  }
+}

@@ -1,0 +1,17 @@
+[Unit]
+Description=Herdr Office (pixel-art virtual office for your herdr session)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=__PROJECT_DIR__
+ExecStart=__NODE__ server/index.js
+Restart=always
+RestartSec=3
+# Listens on 127.0.0.1 (and any other HOST addresses from .env) only.
+NoNewPrivileges=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

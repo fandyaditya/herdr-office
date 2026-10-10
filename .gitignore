@@ -1,0 +1,21 @@
+# secrets and local config
+.env
+deploy/deploy.env
+*.key
+*.pem
+
+# local state and generated files
+node_modules/
+.dev/
+*.log
+.assets-cache/
+.DS_Store
+
+# art pipeline scratch (generated per-user, may contain account details)
+art/ledger.md
+art/raw/
+art/dev-*/
+art/cast-gen.log
+
+# local research notes (distilled, shareable versions live in docs/harnesses/)
+research/

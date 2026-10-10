@@ -1,0 +1,22 @@
+{
+ "cell": 32,
+ "cols": 6,
+ "rows": 5,
+ "dirs": [
+  "south",
+  "east",
+  "north",
+  "west"
+ ],
+ "chars": [
+  {
+   "slug": "herdy",
+   "box": {
+    "x0": 6,
+    "y0": 6,
+    "x1": 25,
+    "y1": 27
+   }
+  }
+ ]
+}

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14151f">
+<title>Herdr Office</title>
+<link rel="icon" href="/favicon.svg">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="top">
+  <button id="btn-floors" class="icon only-mobile" aria-label="Floors" title="Floors">☰</button>
+  <div class="logo"><span class="logo-mark"></span><span class="logo-text">HERDR OFFICE</span></div>
+  <div class="counters" id="counters" aria-live="polite"></div>
+  <div class="spacer"></div>
+  <div class="conn" id="conn"><i></i><span>connecting…</span></div>
+  <button id="btn-follow" class="tool" title="Jump to the floor you focus in herdr">follow</button>
+  <button id="btn-sound" class="tool" title="Chime when an agent needs you or finishes">sound off</button>
+  <button id="btn-about" class="tool" title="Shortcuts, fun facts and secrets (?)" aria-label="About">?</button>
+  <button id="btn-fit" class="tool" title="Fit floor to screen">fit</button>
+  <a class="tool" href="/logout" title="Sign out">exit</a>
+</header>
+
+<div class="body">
+  <aside id="floors" class="floors">
+    <div class="panel-title">BUILDING</div>
+    <div id="floor-list" class="floor-list"></div>
+    <div class="panel-title">ACTIVITY</div>
+    <ol id="activity" class="activity"></ol>
+  </aside>
+
+  <main class="stage" id="stage">
+    <canvas id="office" aria-label="Virtual office floor"></canvas>
+    <div class="hud-zoom">
+      <button id="zoom-in" aria-label="Zoom in">+</button>
+      <button id="zoom-out" aria-label="Zoom out">−</button>
+    </div>
+    <div id="empty" class="empty" hidden></div>
+    <div id="tip" class="tip" hidden></div>
+  </main>
+
+  <aside id="drawer" class="drawer" hidden>
+    <div class="drawer-head">
+      <div class="who">
+        <div class="avatar" id="d-avatar"></div>
+        <div>
+          <div class="who-name" id="d-name">—</div>
+          <div class="who-sub" id="d-sub">—</div>
+        </div>
+      </div>
+      <div class="d-btns">
+        <button id="d-full" class="icon" aria-label="Full screen" aria-pressed="false" title="Full screen">⤢</button>
+        <button id="d-close" class="icon" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div class="d-meta" id="d-meta"></div>
+    <div class="term-tabs" id="d-tabs" hidden>
+      <button type="button" data-view="chat" hidden>Chat</button>
+      <button type="button" data-view="term" class="on">Terminal</button>
+      <button type="button" data-view="side" hidden>Diff / side panel</button>
+    </div>
+    <div class="chat" id="d-chat" hidden></div>
+    <div class="term-wrap">
+      <pre id="d-term" class="term" tabindex="0" aria-label="Terminal output"></pre>
+      <div class="term-status" id="d-termstat"></div>
+    </div>
+    <form id="d-form" class="d-form" autocomplete="off">
+      <div class="d-attach" id="d-attach" hidden></div>
+      <div class="d-attstat" id="d-attstat" role="status" hidden></div>
+      <textarea id="d-input" rows="2" enterkeyhint="send" placeholder="Type to this pane… (Enter sends, Shift+Enter newline)" spellcheck="false"></textarea>
+      <div class="d-actions">
+        <button type="submit" class="primary">Send ⏎</button>
+        <button type="button" id="d-stop" class="stop" title="Interrupt the agent (Esc; Ctrl+C for Cursor)" hidden>■ Stop</button>
+        <label class="btn" id="d-img" for="d-file" title="Attach an image (or paste / drop one)">📎 Image</label>
+        <input type="file" id="d-file" class="visually-hidden" accept="image/*" multiple>
+        <button type="button" data-text="1">1</button>
+        <button type="button" data-text="2">2</button>
+        <button type="button" data-text="y">y</button>
+        <button type="button" data-text="n">n</button>
+        <button type="button" data-key="enter">Enter</button>
+        <button type="button" data-key="esc">Esc</button>
+        <button type="button" data-key="ctrl+c">^C</button>
+        <button type="button" data-key="up">↑</button>
+        <button type="button" data-key="down">↓</button>
+        <button type="button" data-key="tab">Tab</button>
+        <button type="button" id="d-focus" title="Make herdr switch to this pane">focus in herdr</button>
+      </div>
+    </form>
+  </aside>
+</div>
+<dialog id="about" class="about" aria-labelledby="about-title">
+  <h2 id="about-title">Herdr Office</h2>
+  <p class="about-lead">Workspace = floor, tab = room, pane = desk. Your agents are the people.</p>
+  <h3>Shortcuts</h3>
+  <p class="about-keys"><kbd>[</kbd> <kbd>]</kbd> previous / next floor &nbsp; <kbd>Esc</kbd> close the panel &nbsp; <kbd>?</kbd> this box &nbsp; <kbd>Enter</kbd> send, <kbd>Shift</kbd>+<kbd>Enter</kbd> newline</p>
+  <h3>Did you know?</h3>
+  <p class="about-fact" data-fact></p>
+  <h3>Secrets found: <span data-count></span></h3>
+  <ul class="about-eggs" data-eggs></ul>
+  <div class="about-btns"><button type="button" data-another>Another fact</button><button type="button" data-close class="primary">Close</button></div>
+</dialog>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<script type="module" src="/js/main.js"></script>
+</body>
+</html>

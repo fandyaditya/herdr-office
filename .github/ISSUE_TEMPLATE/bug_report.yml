@@ -1,0 +1,24 @@
+name: Bug report
+description: Something in the office or the chat view misbehaves
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes: { label: What happened, description: "And what you expected. A screenshot helps.", }
+    validations: { required: true }
+  - type: textarea
+    id: steps
+    attributes: { label: Steps to reproduce }
+  - type: input
+    id: env
+    attributes: { label: "Output of `npm run doctor`", description: "Paste the summary, minus anything private." }
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Which agent (if it is about the chat view)
+      options: [none / office only, Claude Code, Cursor CLI, Codex CLI, other]
+  - type: checkboxes
+    id: demo
+    attributes:
+      label: Does it happen in `npm run demo`?
+      options: [{ label: "Yes, it also happens in the demo" }, { label: "No, only with my real herdr" }]
