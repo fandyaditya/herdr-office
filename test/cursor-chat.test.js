@@ -168,3 +168,59 @@ test('sessionFromFdTargets ignores unrelated files and strips -wal', () => {
   assert.equal(sessionFromFdTargets(['/dev/null', `${store}-wal`]).sessionId, id);
   assert.equal(sessionFromFdTargets(['/home/demo/.cursor/ai-tracking/ai-code-tracking.db']), null);
 });
+
+// Cursor writes a user turn as a bare <timestamp> line and fills in <user_query> by rewriting that line a moment later;
+// it also rewrites the whole file now and then. Reading only appended bytes lost those messages (no bubble, just replies).
+const bare = () => line({ role: 'user', message: { content: [{ type: 'text', text: '<timestamp>Sunday, Oct 11, 2026, 11:00 AM (UTC)</timestamp>' }] } });
+const kinds = (t) => t.items.map((i) => `${i.kind}${i.text ? ':' + i.text.slice(0, 12) : ''}`);
+
+test('a user turn whose text is filled in by rewriting the last line shows up, before the reply', () => {
+  const f = path.join(tmp(), 'inplace.jsonl');
+  fs.writeFileSync(f, [asst([{ type: 'text', text: 'Earlier answer.' }]), bare()].join('\n') + '\n');
+  const t = new Transcript(f);
+  t.refresh();
+  assert.deepEqual(kinds(t), ['assistant:Earlier answ']);          // the bare line has nothing to show yet
+  fs.writeFileSync(f, [asst([{ type: 'text', text: 'Earlier answer.' }]), userQuery('How small can it get?')].join('\n') + '\n');
+  assert.ok(t.refresh());
+  assert.deepEqual(kinds(t), ['assistant:Earlier answ', 'user:How small ca']);
+  fs.appendFileSync(f, asst([{ type: 'text', text: 'Pretty small.' }]) + '\n');
+  t.refresh();
+  assert.deepEqual(kinds(t), ['assistant:Earlier answ', 'user:How small ca', 'assistant:Pretty small']);
+});
+
+test('a text that arrives after the reply began is put in order (everything is rebuilt once, viewers reset)', () => {
+  const f = path.join(tmp(), 'late.jsonl');
+  fs.writeFileSync(f, [asst([{ type: 'text', text: 'one' }]), bare(), asst([{ type: 'text', text: 'two' }])].join('\n') + '\n');
+  const t = new Transcript(f);
+  t.refresh();
+  const gen = t.generation;
+  fs.writeFileSync(f, [asst([{ type: 'text', text: 'one' }]), userQuery('late question'), asst([{ type: 'text', text: 'two' }])].join('\n') + '\n');
+  assert.ok(t.refresh());
+  assert.deepEqual(kinds(t), ['assistant:one', 'user:late questio', 'assistant:two']);
+  assert.ok(t.generation > gen, 'viewers are told to start over');
+  assert.deepEqual(t.items.map((i) => i.seq), [0, 1, 2]);
+});
+
+test('a rewritten file (larger, different start) is read from scratch instead of from the old offset', () => {
+  const f = path.join(tmp(), 'rewrite.jsonl');
+  fs.writeFileSync(f, [userQuery('first'), asst([{ type: 'text', text: 'reply one' }])].join('\n') + '\n');
+  const t = new Transcript(f);
+  t.refresh();
+  fs.writeFileSync(f, [userQuery('first, now much longer than before'), asst([{ type: 'text', text: 'reply one, also longer' }]), userQuery('second'), asst([{ type: 'text', text: 'reply two' }])].join('\n') + '\n');
+  assert.ok(t.refresh());
+  assert.deepEqual(kinds(t), ['user:first, now m', 'assistant:reply one, a', 'user:second', 'assistant:reply two']);
+});
+
+test('re-reading the tail is quiet when nothing changed (no version churn for viewers)', () => {
+  const f = path.join(tmp(), 'quiet.jsonl');
+  fs.writeFileSync(f, [userQuery('q'), asst([{ type: 'text', text: 'a' }])].join('\n') + '\n');
+  const t = new Transcript(f);
+  t.refresh();
+  const ver = t.ver;
+  const later = new Date(Date.now() + 5000); fs.utimesSync(f, later, later); // touched, same content
+  assert.equal(t.refresh(), false);
+  assert.equal(t.ver, ver);
+  fs.appendFileSync(f, asst([{ type: 'text', text: 'b' }]) + '\n');
+  assert.ok(t.refresh());
+  assert.equal(t.items.length, 3);
+});

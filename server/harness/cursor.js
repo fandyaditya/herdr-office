@@ -3,7 +3,9 @@
 //  pane --(herdr pane.process_info)--> cursor-agent pid --(/proc/<pid>/fd)--> store.db
 //       --(~/.cursor/chats/<md5(cwd)>/<sessionId>/store.db)--> native resume store (tool results)
 //       --(~/.cursor/projects/<cwd-with-slashes-as-dashes>/agent-transcripts/<id>/<id>.jsonl)
-//            --> append-only timeline (user / assistant text / tool_use). No tool ids or results.
+//            --> timeline (user / assistant text / tool_use). No tool ids or results. NOT strictly append-only:
+//                Cursor writes a user turn as a bare <timestamp> line and fills in <user_query> by rewriting that
+//                last line a moment later, and now and then rewrites the whole file. See Transcript#tailJsonl.
 //
 // Same contract as claude.js: locate(info) and Transcript with refresh/delta/before.
 // The log is undocumented; unknown entries and bad lines are skipped.
@@ -20,6 +22,7 @@ const STORE_FD = /(?:^|[/\\])(?:\.cursor[/\\])?chats[/\\]([0-9a-f]{32})[/\\]([0-
 const MAX_TEXT = 6000;
 const MAX_ITEMS = 4000;
 const TAIL_BYTES = 24 * 1024 * 1024;
+const WINDOW = 24; // the last lines re-read on every change, because Cursor edits the tail of its log in place
 const SKIP_RESULT = new Set(['GetDynamicTools', 'GetMcpTools']);
 const NAME_MAP = { Shell: 'Bash', StrReplace: 'Edit', ReadFile: 'Read', ApplyPatch: 'Edit', Await: 'AwaitShell' };
 
@@ -246,13 +249,22 @@ export class Transcript {
     this.blobRowid = 0;
     this.storeSize = 0;
     this.compactMtime = 0;
+    this.size = 0; this.mtimeMs = 0;
+    this.starts = [];            // last WINDOW parsed lines: { n: line number, off: byte offset, h: fingerprint }
+    this.lineOff = 0;            // byte offset of the next line to be read
+    this.maxLine = 0;            // newest line that produced an item
+    this.generation = 0;         // bumps when everything is rebuilt, so viewers start over
+    this.check = null; this.mismatch = false; this.rebuild = false;
   }
 
   #upsert(op) {
     if (!op?.id) return;
     if (op._raw) { this.toolKeys.set(op.id, { raw: op._raw, key: op._key }); delete op._raw; delete op._key; }
     const prev = this.byId.get(op.id);
-    if (prev) { Object.assign(prev, op); prev.v = ++this.ver; return; }
+    if (prev) { // re-reading the tail replays lines we already have: only a real change bumps the version
+      if (Object.keys(op).every((k) => JSON.stringify(prev[k]) === JSON.stringify(op[k]))) return;
+      Object.assign(prev, op); prev.v = ++this.ver; return;
+    }
     const item = { ...op, seq: this.items.length ? this.items.at(-1).seq + 1 : 0, v: ++this.ver };
     this.items.push(item); this.byId.set(item.id, item);
     if (this.items.length > MAX_ITEMS) {
@@ -260,29 +272,57 @@ export class Transcript {
       for (const x of d) { this.byId.delete(x.id); this.toolKeys.delete(x.id); }
     }
   }
-  #line(line) {
-    if (!line) return;
-    let e; try { e = JSON.parse(line); } catch { return; }
-    this.lineNo += 1;
-    for (const op of normalize(e, this.lineNo)) this.#upsert(op);
+  #reset() {
+    this.offset = 0; this.carry = ''; this.decoder = new StringDecoder('utf8');
+    this.items = []; this.byId.clear(); this.toolKeys.clear(); this.lineNo = 0; this.ver++; this.generation++;
+    this.blobRowid = 0; this.seenRes.clear(); this.callKeys.clear(); this.results = [];
+    this.starts = []; this.lineOff = 0; this.maxLine = 0; this.check = null; this.mismatch = false; this.rebuild = false;
   }
 
+  #line(line) {
+    const start = this.lineOff;
+    this.lineOff += Buffer.byteLength(line) + 1;
+    if (!line || this.mismatch) return;
+    const h = `${line.length}:${line.slice(0, 48)}:${line.slice(-48)}`;
+    if (this.check) { // first line of a re-read: if it is not the line we saw there, the file was rewritten
+      const want = this.check; this.check = null;
+      if (want !== h) { this.mismatch = true; return; }
+    }
+    let e; try { e = JSON.parse(line); } catch { return; }
+    this.lineNo += 1;
+    this.starts.push({ n: this.lineNo, off: start, h });
+    if (this.starts.length > WINDOW) this.starts.shift();
+    const ops = normalize(e, this.lineNo);
+    // A line above items we already have turns into an item late (a user turn getting its text after the answer began):
+    // the order would be wrong, so rebuild from the top once.
+    if (ops.some((op) => !this.byId.has(op.id)) && this.lineNo < this.maxLine) this.rebuild = true;
+    for (const op of ops) this.#upsert(op);
+    if (ops.length) this.maxLine = Math.max(this.maxLine, this.lineNo);
+  }
+
+  // Cursor's timeline is not append-only. A user turn is written as a bare <timestamp> line and the <user_query> is
+  // filled in by rewriting that last line shortly after; the whole file is also rewritten now and then. So each time the
+  // file changes, the last WINDOW lines are read again (re-reading a line we already have changes nothing), and if the
+  // first of them is no longer what we saw there, the file was rewritten and we start over.
   #tailJsonl() {
     if (!this.file) return false;
     let st;
     try { st = fs.statSync(this.file); } catch { return false; }
-    if (st.size < this.offset) {
-      this.offset = 0; this.carry = ''; this.decoder = new StringDecoder('utf8');
-      this.items = []; this.byId.clear(); this.toolKeys.clear(); this.lineNo = 0; this.ver++;
-      this.blobRowid = 0; this.seenRes.clear(); this.callKeys.clear(); this.results = [];
+    if (st.size < this.offset) this.#reset();
+    else if (st.size === this.size && st.mtimeMs === this.mtimeMs) return false;
+    this.size = st.size; this.mtimeMs = st.mtimeMs;
+    const before = this.ver, gen = this.generation;
+    if (this.starts.length && this.offset > 0) {
+      const first = this.starts[0];
+      this.offset = first.off; this.carry = ''; this.decoder = new StringDecoder('utf8');
+      this.lineNo = first.n - 1; this.lineOff = first.off; this.check = first.h; this.starts = [];
     }
-    if (st.size === this.offset) return false;
-    const before = this.ver;
     const fd = fs.openSync(this.file, 'r');
     try {
       let pos = this.offset;
       let skipFirst = false;
       if (pos === 0 && st.size > TAIL_BYTES) { pos = st.size - TAIL_BYTES; skipFirst = true; }
+      this.lineOff = pos;
       const buf = Buffer.alloc(this.chunk);
       while (pos < st.size) {
         const n = fs.readSync(fd, buf, 0, Math.min(this.chunk, st.size - pos), pos);
@@ -291,12 +331,14 @@ export class Transcript {
         this.carry += this.decoder.write(buf.subarray(0, n));
         const lines = this.carry.split('\n');
         this.carry = lines.pop();
-        if (skipFirst) { lines.shift(); skipFirst = false; }
+        if (skipFirst) { const d = lines.shift(); this.lineOff += Buffer.byteLength(d) + 1; skipFirst = false; }
         for (const l of lines) this.#line(l);
+        if (this.mismatch) break;
       }
       this.offset = pos;
     } finally { fs.closeSync(fd); }
-    return this.ver !== before;
+    if (this.mismatch || this.rebuild) { this.#reset(); this.size = 0; this.mtimeMs = 0; this.#tailJsonl(); return true; }
+    return this.ver !== before || this.generation !== gen;
   }
 
   #ingestBlob(obj) {
