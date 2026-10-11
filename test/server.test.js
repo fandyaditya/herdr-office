@@ -95,6 +95,24 @@ test('SSE stream delivers the initial state', async () => {
   assert.match(text, /event: state/);
 });
 
+test('opening a chat never reports "no chat" before the chat itself (the panel must not flash the terminal tab)', async () => {
+  const { model } = await (await fetch(url('/api/state'), { headers: auth })).json();
+  const agent = model.workspaces.flatMap((w) => w.tabs.flatMap((t) => t.panes)).find((p) => p.kind === 'claude');
+  const ctl = new AbortController();
+  const r = await fetch(url('/api/events'), { headers: auth, signal: ctl.signal });
+  const reader = r.body.getReader();
+  let text = '';
+  const pump = async (until) => { while (!until()) { const { value, done } = await reader.read(); if (done) break; text += new TextDecoder().decode(value); } };
+  await pump(() => /event: hello/.test(text));
+  const cid = JSON.parse(/event: hello\ndata: (.*)\n/.exec(text)[1]).cid;
+  const w = await fetch(url('/api/watch'), { method: 'POST', headers: { ...auth, 'content-type': 'application/json' }, body: JSON.stringify({ cid, pane: agent.id, chat: true }) });
+  assert.equal(w.status, 200);
+  await pump(() => /event: chat\n/.test(text) || /event: chatnone/.test(text));
+  ctl.abort();
+  assert.ok(/event: chat\n/.test(text), 'got the conversation');
+  assert.ok(!/event: chatnone/.test(text), 'and no premature "no chat" notice');
+});
+
 test('image upload stores real images only and returns a private file path', async () => {
   const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(32)]);
   const up = (body, headers = {}) => fetch(url('/api/pane/w1:p1/image'), { method: 'POST', body, headers: { ...auth, origin: `http://127.0.0.1:${PORT}`, ...headers } });

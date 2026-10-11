@@ -167,7 +167,7 @@ async function chatLocate(id, w) {
   if (w.loc && Date.now() - w.locAt < 2500) return w.loc;
   let loc = null;
   try { loc = await locateChat(w.adapter, id); } catch { loc = null; }
-  w.locAt = Date.now();
+  w.locAt = Date.now(); w.checked = true; // from here on "no session" is a real answer, not "still looking"
   return (w.loc = loc);
 }
 function chatTranscript(adapter, loc) {
@@ -223,7 +223,9 @@ function syncChat() {
 function sendChatSnapshot(c) {
   const w = chatWatchers.get(c.chat);
   if (!w) return;
-  if (!w.loc) return c.write(chatNone(c.chat, w.none || 'no-session')); // the first poll reports it
+  // Still looking (the first poll has not finished): say nothing, or the panel flashes the terminal tab before the chat
+  // arrives. Once looked, "no session" is real and the page falls back to the terminal.
+  if (!w.loc) { if (w.checked) c.write(chatNone(c.chat, w.none || 'no-session')); return; }
   if (w.tr) c.write(chatFrame(c.chat, w.loc, w.tr, w.tr.delta(0, CHAT_FIRST), true));
 }
 
