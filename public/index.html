@@ -25,7 +25,7 @@
 
 <div class="body">
   <aside id="floors" class="floors">
-    <div class="panel-title">BUILDING</div>
+    <div class="panel-title floors-head"><span>BUILDING</span><button type="button" id="btn-newfloor" class="mini" title="Create a new floor (a herdr workspace)">+ new</button></div>
     <div id="floor-list" class="floor-list"></div>
     <div class="panel-title">ACTIVITY</div>
     <ol id="activity" class="activity"></ol>
@@ -100,6 +100,23 @@
   <h3>Secrets found: <span data-count></span></h3>
   <ul class="about-eggs" data-eggs></ul>
   <div class="about-btns"><button type="button" data-another>Another fact</button><button type="button" data-close class="primary">Close</button></div>
+</dialog>
+<dialog id="newfloor" class="about newfloor" aria-labelledby="nf-title">
+  <form id="nf-form" method="dialog" autocomplete="off">
+    <h2 id="nf-title">New floor</h2>
+    <p class="about-lead">Opens a new herdr workspace with one shell in the folder you choose.</p>
+    <label class="nf-field">Folder<input id="nf-cwd" list="nf-dirs" placeholder="~/projects/my-app (blank: herdr's default)" spellcheck="false"></label>
+    <datalist id="nf-dirs"></datalist>
+    <label class="nf-field">Name<input id="nf-label" maxlength="60" placeholder="defaults to the folder name" spellcheck="false"></label>
+    <fieldset class="nf-agents"><legend>Start an agent</legend>
+      <label><input type="radio" name="agent" value="" checked> none</label>
+      <label><input type="radio" name="agent" value="claude"> Claude</label>
+      <label><input type="radio" name="agent" value="codex"> Codex</label>
+      <label><input type="radio" name="agent" value="cursor"> Cursor</label>
+    </fieldset>
+    <div id="nf-stat" class="nf-stat" role="status" hidden></div>
+    <div class="about-btns"><button type="button" id="nf-cancel">Cancel</button><button type="submit" id="nf-go" class="primary">Create floor</button></div>
+  </form>
 </dialog>
 <div id="toasts" class="toasts" aria-live="polite"></div>
 <script type="module" src="/js/main.js"></script>

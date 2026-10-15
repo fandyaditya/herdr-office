@@ -6,6 +6,7 @@ import { ansiToHtml } from './ansi.js';
 import { ChatView, dialogOpen } from './chat.js';
 import { loadAssets, cast, castFrame, castIndexFor } from './assets.js';
 import { installEggs } from './eggs.js';
+import { installNewFloor } from './newfloor.js';
 
 const $ = (id) => document.getElementById(id);
 // The floor follows the viewer's local time (night look, agents asleep). `?hour=23` previews another hour.
@@ -613,6 +614,7 @@ let eggs = null;
 async function boot() {
   wireStage(); wireChrome(); wireDrawer();
   eggs = window.__office.eggs = installEggs({ $, renderer, toast, sim: () => (S.cur && S.floors.get(S.cur)?.sim) || null });
+  installNewFloor({ $, S, goFloor, select, toast });
   renderer.resize();
   new ResizeObserver(() => { const hadFloor = !!renderer.plan; const z = renderer.cam.zoom; renderer.resize(); if (hadFloor) { renderer.clampCam(); } }).observe($('stage'));
   addEventListener('hashchange', () => { const id = location.hash.slice(1); if (S.panes.has(id) && id !== S.selected) select(id, true); });

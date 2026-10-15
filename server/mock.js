@@ -46,6 +46,7 @@ export class MockHerdr {
       });
       return { workspace_id: wid, number: wi + 1, label: f.label, focused: wi === 0, active_tab_id: `${wid}:t1` };
     });
+    this.nextPane = id; this.nextWs = this.workspaces.length + 1;
     this.helpers = new Map(); // pane id -> running sub-agents (the demo's interns)
     if (process.env.OFFICE_MOCK_STATIC !== '1') this.timer = setInterval(() => this.#tick(), 2500);
   }
@@ -83,6 +84,23 @@ export class MockHerdr {
   async sendText(id, text) { const p = this.panes.find((x) => x.pane_id === id); p?.buf.push(`> ${text}`); }
   async sendKeys(id, keys) { const p = this.panes.find((x) => x.pane_id === id); p?.buf.push(`<keys ${keys.join('+')}>`); }
   async focusPane() { /* no-op */ }
+  async createWorkspace({ label, cwd }) {
+    const wid = `w${this.nextWs++}`, tid = `${wid}:t1`, pid = `${wid}:p${this.nextPane++}`;
+    const workspace = { workspace_id: wid, number: this.workspaces.length + 1, label: label || wid, focused: false, active_tab_id: tid };
+    const tab = { tab_id: tid, workspace_id: wid, label: '1', number: 1 };
+    const pane = { pane_id: pid, tab_id: tid, workspace_id: wid, agent: null, agent_status: 'unknown', terminal_title_stripped: 'user@host: ~/code',
+      foreground_cwd: cwd || '/home/demo', revision: 1, focused: false, buf: ['$ '] };
+    this.workspaces.push(workspace); this.tabs.push(tab); this.panes.push(pane);
+    return { workspace, tab, root_pane: pane };
+  }
+  async startAgent(paneId, kind) {
+    const p = this.panes.find((x) => x.pane_id === paneId); if (!p) throw new Error('no such pane');
+    p.agent = kind; p.agent_status = 'idle'; p.buf.push(`$ ${kind}`, 'ready.'); p.revision++;
+  }
+  async closeWorkspace(id) {
+    this.workspaces = this.workspaces.filter((w) => w.workspace_id !== id);
+    this.tabs = this.tabs.filter((t) => t.workspace_id !== id); this.panes = this.panes.filter((p) => p.workspace_id !== id);
+  }
   // test hook: force a pane's status (POST /api/mock/set, mock mode only)
   force(id, status, helpers) { const p = this.panes.find((x) => x.pane_id === id); if (p?.agent) { p.agent_status = status; if (helpers !== undefined) this.#setHelpers(p, Number(helpers) || 0); p.revision++; } }
 }

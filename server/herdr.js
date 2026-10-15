@@ -80,4 +80,13 @@ export class HerdrClient {
   sendKeys(paneId, keys) { return this.call('pane.send_keys', { pane_id: paneId, keys }); }
   processInfo(paneId) { return this.call('pane.process_info', { pane_id: paneId }); }
   focusPane(paneId) { return this.call('pane.focus', { pane_id: paneId }); }
+  // Never steals focus from whoever is at the herdr screen. Resolves to { workspace, root_pane, tab }.
+  createWorkspace({ label, cwd }) {
+    return this.call('workspace.create', { ...(label ? { label } : {}), ...(cwd ? { cwd } : {}), focus: false });
+  }
+  // The pane must be at a shell prompt; herdr waits until the agent is ready (up to timeoutMs), so allow for it.
+  startAgent(paneId, kind, timeoutMs = 30000) {
+    return this.call('agent.start', { name: kind, kind, pane_id: paneId, timeout_ms: timeoutMs }, timeoutMs + 5000);
+  }
+  closeWorkspace(workspaceId) { return this.call('workspace.close', { workspace_id: workspaceId }); }
 }

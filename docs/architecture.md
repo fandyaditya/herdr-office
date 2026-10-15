@@ -24,6 +24,7 @@ the first run, checks the port and herdr's socket, prints the URL and then impor
 | `model.js` | Turns `session.snapshot` into the building: workspace -> floor, tab -> room, pane -> seat and worker. |
 | `layout.js` | `splitPanes()` separates Claude Code's diff side panel from the chat text on a pane screen. |
 | `auth.js`, `login.js` | Token check (constant time), cookie session, attempt rate limit, login page. |
+| `workspace.js` | Validates a "new floor" request (real folder, short clean name, known agent). |
 | `upload.js` | Saves chat-box images (type sniffed from the bytes, owner-only files, 24 h cleanup). |
 | `env.js` | Loads `.env` without a dependency. |
 | `mock.js`, `demo/` | Demo building (`OFFICE_MOCK=1`) and a sample transcript served through the Claude adapter. |
@@ -45,7 +46,9 @@ nobody is connected the server idles. Errors from herdr are debounced (3 failure
 | `POST /api/watch` | `{cid, pane, chat}`: tell the server which pane / chat this connection has open. |
 | `GET /api/pane/:id/read` | One-off terminal read. |
 | `GET /api/pane/:id/chat` | Chat items; supports `before`, `since`, `limit`. |
+| `POST /api/workspace` | `{label?, cwd?, agent?}`: creates a herdr workspace (never steals focus), optionally starting `claude`, `codex` or `cursor` in its pane. The folder must exist; the agent is checked against a short list. Returns `{workspace, pane, agent, agentError?}`. |
 | `POST /api/pane/:id/text`, `/keys`, `/focus` | Send text, send keys, focus the pane in herdr. |
+| `GET /api/file?path=` | An image from disk for the chat thumbnails. Image bytes only, under home or the temp folder, no dot-folders. |
 | `POST /api/pane/:id/image` | Raw image body (png/jpeg/gif/webp, max 10 MB); returns the saved file's `path`, which the client puts in the message. |
 | `GET /healthz` | Liveness. |
 

@@ -190,6 +190,7 @@ button,input,textarea{font:inherit;color:inherit}
 .d-actions .btn{display:inline-block;color:inherit;user-select:none;-webkit-tap-highlight-color:transparent}
 .visually-hidden{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0);pointer-events:none}
 .c-pics{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.c-picpath{display:block;margin-top:6px;font-size:12px;opacity:.7;word-break:break-all}
 .c-pic{display:block;max-width:100%;max-height:220px;border:1px solid var(--line);background:#0a0b12}
 .d-attstat{font-size:11.5px;color:var(--muted,#9aa0b5)}
 .d-attstat.err{color:#ff8a86}
@@ -216,3 +217,15 @@ button,input,textarea{font:inherit;color:inherit}
 .about-btns{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .about-btns button{background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:6px 12px;cursor:pointer;font:inherit}
 .about-btns button:hover{border-color:var(--accent)}.about-btns .primary{background:var(--accent);border-color:var(--accent);color:#241a00}
+
+.floors-head{display:flex;align-items:center;justify-content:space-between}
+.mini{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font:10px var(--mono,monospace);padding:2px 7px;cursor:pointer}
+.mini:hover{border-color:var(--accent)}
+.newfloor{width:min(460px,calc(100vw - 24px))}
+.nf-field{display:flex;flex-direction:column;gap:4px;margin-top:12px;color:var(--dim);font-size:11.5px}
+.nf-field input{background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:7px 8px;font:13px var(--mono,monospace);min-width:0}
+.nf-field input:focus{outline:none;border-color:var(--accent)}
+.nf-agents{border:1px solid var(--line);margin:14px 0 0;padding:6px 10px 8px;display:flex;flex-wrap:wrap;gap:4px 16px;color:var(--ink)}
+.nf-agents legend{color:var(--dim);font-size:11.5px;padding:0 4px}
+.nf-agents label{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+.nf-stat{margin-top:12px;font-size:11.5px;color:var(--dim)}.nf-stat.err{color:#ff8a86}

@@ -113,6 +113,46 @@ test('opening a chat never reports "no chat" before the chat itself (the panel m
   assert.ok(!/event: chatnone/.test(text), 'and no premature "no chat" notice');
 });
 
+test('creating a floor: validates, starts the agent, and the new floor shows up in the state', async () => {
+  const post = (body, headers = {}) => fetch(url('/api/workspace'), { method: 'POST', body: JSON.stringify(body), headers: { ...auth, 'content-type': 'application/json', origin: `http://127.0.0.1:${PORT}`, ...headers } });
+  assert.equal((await fetch(url('/api/workspace'), { method: 'POST', body: '{}' })).status, 401);
+  assert.equal((await post({}, { origin: 'http://evil.example' })).status, 403, 'cross-origin is refused');
+  assert.equal((await post({ agent: 'rm' })).status, 400);
+  assert.equal((await post({ cwd: '/definitely/not/here' })).status, 400);
+  const ok = await post({ label: 'scratch', cwd: os.tmpdir(), agent: 'claude' });
+  assert.equal(ok.status, 200);
+  const made = await ok.json();
+  assert.ok(made.workspace && made.pane); assert.equal(made.agent, 'claude');
+  const { model } = await (await fetch(url('/api/state'), { headers: auth })).json();
+  const ws = model.workspaces.find((w) => w.id === made.workspace);
+  assert.equal(ws?.name ?? ws?.label, 'scratch');
+  assert.equal(ws.tabs[0].panes[0].kind, 'claude');
+});
+
+test('/api/file serves images by path, and nothing else', async () => {
+  const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(32)]);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'office-file-'));
+  const get = (p, headers = auth) => fetch(url(`/api/file?path=${encodeURIComponent(p)}`), { headers });
+  try {
+    const shot = path.join(dir, 'shot.png'); fs.writeFileSync(shot, png);
+    const ok = await get(shot);
+    assert.equal(ok.status, 200); assert.equal(ok.headers.get('content-type'), 'image/png');
+    assert.deepEqual(Buffer.from(await ok.arrayBuffer()), png);
+    const anon = await get(shot, {}).catch((e) => { throw e.cause || e; });
+    assert.equal(anon.status, 401, 'needs the login');
+    const fake = path.join(dir, 'fake.png'); fs.writeFileSync(fake, '<svg onload=alert(1)>');
+    assert.equal((await get(fake)).status, 404, 'type comes from the bytes');
+    const txt = path.join(dir, 'notes.txt'); fs.writeFileSync(txt, png);
+    assert.equal((await get(txt)).status, 404, 'only image extensions');
+    fs.mkdirSync(path.join(dir, '.secret')); fs.writeFileSync(path.join(dir, '.secret', 'a.png'), png);
+    assert.equal((await get(path.join(dir, '.secret', 'a.png'))).status, 404, 'dot-folders are off limits');
+    fs.symlinkSync('/etc/hostname', path.join(dir, 'link.png'));
+    assert.equal((await get(path.join(dir, 'link.png'))).status, 404, 'a link out is not an image');
+    assert.equal((await get('relative/shot.png')).status, 404);
+    assert.equal((await get('/etc/passwd.png')).status, 404);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 test('image upload stores real images only and returns a private file path', async () => {
   const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(32)]);
   const up = (body, headers = {}) => fetch(url('/api/pane/w1:p1/image'), { method: 'POST', body, headers: { ...auth, origin: `http://127.0.0.1:${PORT}`, ...headers } });

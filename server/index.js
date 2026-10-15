@@ -10,7 +10,8 @@ import { makeAuth } from './auth.js';
 import { loginPage } from './login.js';
 import { splitPanes } from './layout.js';
 import { SubagentTracker } from './harness/claude.js';
-import { storeImage, readUpload, UPLOAD_MAX } from './upload.js';
+import { checkNewWorkspace } from './workspace.js';
+import { storeImage, readUpload, readImageFile, UPLOAD_MAX } from './upload.js';
 import { adapterFor as realAdapterFor } from './harness/index.js';
 
 loadEnv();
@@ -282,12 +283,12 @@ function serveStatic(req, res, pathname) {
   fs.stat(file, (err, st) => {
     if (err || !st.isFile()) return send(res, 404, 'not found');
     const etag = `"${st.size.toString(16)}-${Math.floor(st.mtimeMs).toString(16)}"`;
-    if (req.headers['if-none-match'] === etag) { res.writeHead(304, { etag }); return res.end(); }
     const ext = path.extname(file).toLowerCase();
-    res.writeHead(200, {
-      'content-type': MIME[ext] || 'application/octet-stream', etag, ...SECURITY,
-      'cache-control': ext === '.png' || ext === '.webp' ? 'public, max-age=3600, must-revalidate' : 'no-cache',
-    });
+    // Code and styles must revalidate on every load, or a phone keeps running last release's script against this release's
+    // page. "private" matters: behind Cloudflare a plain "no-cache" was rewritten to "max-age=14400" (4 h of stale code).
+    const cc = ext === '.png' || ext === '.webp' ? 'public, max-age=3600, must-revalidate' : 'private, no-cache';
+    if (req.headers['if-none-match'] === etag) { res.writeHead(304, { etag, 'cache-control': cc }); return res.end(); }
+    res.writeHead(200, { 'content-type': MIME[ext] || 'application/octet-stream', etag, ...SECURITY, 'cache-control': cc });
     fs.createReadStream(file).pipe(res);
   });
 }
@@ -337,6 +338,25 @@ async function handleApi(req, res, url) {
     const img = readUpload(decodeURIComponent(up[1]));
     if (!img) return send(res, 404, { error: 'not found' });
     return send(res, 200, img.data, { 'content-type': img.type, 'cache-control': 'private, max-age=3600', 'content-disposition': 'inline' });
+  }
+  if (p === '/api/file' && req.method === 'GET') {
+    const img = readImageFile(url.searchParams.get('path'));
+    if (!img) return send(res, 404, { error: 'not found' });
+    return send(res, 200, img.data, { 'content-type': img.type, 'cache-control': 'private, max-age=300', 'content-disposition': 'inline' });
+  }
+  if (p === '/api/workspace' && req.method === 'POST') {
+    if (!sameOrigin(req)) return send(res, 403, { error: 'cross-origin' });
+    const want = checkNewWorkspace(JSON.parse((await readBody(req)) || '{}'));
+    if (want.error) return send(res, 400, { error: want.error });
+    let made;
+    try { made = await herdr.createWorkspace(want); } catch (e) { return send(res, 502, { error: `herdr could not create it: ${e.message}` }); }
+    const out = { workspace: made.workspace?.workspace_id, pane: made.root_pane?.pane_id, agent: null };
+    if (want.agent && out.pane) {
+      // The floor exists either way; if the agent does not come up the user still gets a shell and an honest note.
+      try { await herdr.startAgent(out.pane, want.agent); out.agent = want.agent; } catch (e) { out.agentError = e.message; }
+    }
+    await refresh();
+    return send(res, 200, out);
   }
   let m = /^\/api\/pane\/([^/]+)\/(read|chat|text|keys|focus|image)$/.exec(p);
   if (m) {

@@ -40,3 +40,28 @@ export function readUpload(name) {
   if (!m) return null;
   try { return { type: TYPES[m[1]], data: fs.readFileSync(path.join(uploadDir(), name)) }; } catch { return null; }
 }
+
+// Lets the chat show an image the user pasted as a path (a screenshot in ~/Pictures, a file in /tmp, ...).
+// This reads a file off the disk on a browser's say-so, so it is deliberately narrow: an absolute path (or ~/...)
+// that resolves under the home folder or the temp folder, no dot-folders (.ssh, .config, ...) except our own upload
+// folder, and the bytes must really be a png/jpeg/gif/webp. Anything else is "not found", never an error message.
+const IMG_EXT = /\.(png|jpe?g|gif|webp)$/i;
+export function readImageFile(raw) {
+  try {
+    let p = String(raw || '');
+    if (p.length > 1024 || p.includes('\0')) return null;
+    if (p === '~' || p.startsWith('~/')) p = path.join(os.homedir(), p.slice(1));
+    if (!path.isAbsolute(p) || !IMG_EXT.test(p)) return null;
+    const real = fs.realpathSync(p);
+    const within = (root) => { const r = path.relative(fs.realpathSync(root), real); return r !== '' && !r.startsWith('..') && !path.isAbsolute(r) ? r : null; };
+    const mine = within(uploadDir());
+    const rel = mine !== null ? mine : (within(os.homedir()) ?? within(os.tmpdir()));
+    if (rel === null) return null;
+    if (mine === null && rel.split(path.sep).some((seg) => seg.startsWith('.'))) return null;
+    const st = fs.statSync(real);
+    if (!st.isFile() || st.size > UPLOAD_MAX) return null;
+    const data = fs.readFileSync(real);
+    const ext = imageExt(data);
+    return ext ? { type: TYPES[ext], data } : null;
+  } catch { return null; }
+}

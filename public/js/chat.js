@@ -66,15 +66,19 @@ export function dialogOpen(screen) {
   return tail.some((l) => /\besc(?:ape)?\s+to\s+(?:cancel|close|exit|go back|dismiss)\b/i.test(l));
 }
 
-const UPLOAD_PATH = /@?(?:\S*\/)?(img-[a-z0-9]+-[0-9a-f]{8}\.(?:png|jpg|gif|webp))/g;
+// An absolute (or ~/) path to an image, with or without the @ that Cursor and Claude put in front of attachments.
+// Paths with spaces are not matched: the cost of missing one is only a missing thumbnail.
+const IMAGE_PATH = /@?((?:~|\/)[^\s"'`<>()]*\.(?:png|jpe?g|gif|webp))(?![\w/.])/gi;
+const fileUrl = (p) => `/api/file?path=${encodeURIComponent(p)}`;
 
 function renderItem(item) {
   switch (item.kind) {
     case 'user': {
-      // Images attached from the chat box arrive as saved-file paths: show them as thumbnails instead of the path.
+      // Images arrive as file paths (attached from the chat box, or pasted): show them as thumbnails instead of the path.
+      // If the server cannot show one (missing file, outside home/tmp), the load fails and the path comes back as text.
       const pics = [];
-      const text = String(item.text || '').replace(UPLOAD_PATH, (_, name) => { pics.push(name); return ''; }).trim();
-      const thumbs = pics.map((n) => `<a href="/api/upload/${n}" target="_blank" rel="noopener"><img class="c-pic" src="/api/upload/${n}" alt="attached image" loading="lazy"></a>`).join('');
+      const text = String(item.text || '').replace(IMAGE_PATH, (_, p) => { pics.push(p); return ''; }).trim();
+      const thumbs = pics.map((p) => `<a class="c-picl" href="${esc(fileUrl(p))}" target="_blank" rel="noopener" data-path="${esc(p)}"><img class="c-pic" src="${esc(fileUrl(p))}" alt="${esc(p.split('/').pop())}" title="${esc(p)}" loading="lazy"></a>`).join('');
       return { cls: `c-msg c-user${item.queued ? ' c-queued' : ''}`, html: `<div class="c-bubble">${esc(text).replace(/\n/g, '<br>')}${thumbs ? `<div class="c-pics">${thumbs}</div>` : ''}${item.images ? `<div class="c-img">🖼 ${item.images} image${item.images > 1 ? 's' : ''}</div>` : ''}</div><time>${item.queued ? 'queued · the agent will read it when it can' : hhmm(item.ts)}</time>` };
     }
     case 'assistant': return { cls: 'c-msg c-asst', html: `<div class="c-md">${mdToHtml(item.text)}</div>` };
@@ -104,6 +108,11 @@ export class ChatView {
     this.els = new Map(); this.stick = true; this.firstSeq = null; this.status = null; this.screen = '';
     this.scroll.addEventListener('scroll', () => { this.stick = this.#nearBottom(); if (this.stick) this.pill.hidden = true; });
     this.pill.onclick = () => this.#toBottom();
+    // <img> errors do not bubble, so listen in the capture phase. A thumbnail that cannot load turns back into its path.
+    root.addEventListener('error', (e) => {
+      const a = e.target instanceof HTMLImageElement && e.target.closest('.c-picl');
+      if (a) { const c = document.createElement('code'); c.className = 'c-picpath'; c.textContent = a.dataset.path; a.replaceWith(c); }
+    }, true);
     this.earlier.querySelector('button').onclick = async (e) => {
       const b = e.currentTarget; b.disabled = true; b.textContent = 'Loading…';
       try { this.prepend(await hooks.loadEarlier(this.firstSeq)); } finally { b.disabled = false; b.textContent = 'Load earlier messages'; }

@@ -32,7 +32,7 @@ screen: a blocked agent shows a **Waiting for you** card with the prompt text an
 * notices: interrupted turns, compaction, background-task reports; slash commands
 * messages you typed while the agent was busy appear at once as *queued* (Claude Code logs them as `queue-operation`
   entries) and become normal messages in place when delivered
-* images you attach from the chat box appear as thumbnails
+* images you attach from the chat box, and any image path in your message (absolute or `~/`), appear as clickable thumbnails; a path the bridge will not serve falls back to plain text
 * a **Stop** button while the agent is working: `Esc` for Claude Code and Codex, `Ctrl+C` for Cursor (Cursor's screen says
   "ctrl+c to stop"; the Codex key is unverified on a live pane)
 * "Load earlier messages" paging, "new messages" pill when you scrolled up, full-screen mode on phones

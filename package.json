@@ -1,6 +1,6 @@
 {
   "name": "herdr-office",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A pixel-art virtual office and web chat view for your herdr terminal session: workspace = floor, tab = room, pane = desk.",
   "type": "module",
   "license": "MIT",

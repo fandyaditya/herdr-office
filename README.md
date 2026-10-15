@@ -139,7 +139,11 @@ Open the printed URL, log in with the token, done. By default it listens on `127
 - **Terminal tab** for every pane: coloured output pushed live over SSE, a message box, quick keys and "focus in
   herdr". Claude Code's diff side panel gets its own tab.
 - **Send images**: attach, paste or drag a screenshot into the message box. The bridge saves it on the host and puts
-  its path in your message (`@/path` for Claude Code and Cursor, a plain path for Codex).
+  its path in your message (`@/path` for Claude Code and Cursor, a plain path for Codex). In the chat, any image path
+  in your messages (yours or pasted, `~/` ok) shows as a thumbnail; click it to open it full size.
+- **New floor**: the **+ new** button in the building list creates a herdr workspace in a folder you pick (the folders your
+  agents already use are suggested) and can start Claude, Codex or Cursor in it. An agent in a folder it has not seen
+  before may first ask to trust it, which shows up as a blocked desk you can answer from the chat.
 - **Queued messages**: type while the agent is busy and the message shows up at once as *queued*, then settles into
   place when the agent picks it up (Claude Code).
 - **Stop button** while the agent works: `Esc` (Claude Code, Codex) or `Ctrl+C` (Cursor).
@@ -207,7 +211,8 @@ The office can **type into your terminals** and shows everything your agents see
 - The server **refuses to start without a token** and listens on loopback by default.
 - Mutating requests check `Origin`; pane ids and key names are validated; static files cannot escape `public/`.
 - Image uploads accept png, jpeg, gif and webp only (checked from the bytes), up to 10 MB, saved owner-only and
-  deleted after 24 h.
+  deleted after 24 h. Pasted image paths are served only from your home or temp folder, never from dot-folders,
+  and only if the bytes really are an image.
 - Strict CSP, no inline scripts, no third-party requests.
 - Chat and terminal views contain whatever the agent printed, **including secrets** that appeared in tool output. The
   Cursor and Codex adapters drop credential-named fields and mask common credential patterns; that is best-effort,
